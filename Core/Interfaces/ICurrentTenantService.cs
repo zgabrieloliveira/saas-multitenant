@@ -2,6 +2,6 @@ namespace Core.Interfaces;
 
 public interface ICurrentTenantService
 {
-    Guid? TenantId { get; }
+    Guid? CurrentTenantId { get; }
     bool SetTenantId(Guid tenantId);
 }

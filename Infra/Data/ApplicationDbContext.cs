@@ -1,14 +1,21 @@
 using Core.Entities;
 using Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 
 namespace Infra.Data;
 
-public class ApplicationDbContext(
-    DbContextOptions<ApplicationDbContext> options,
-    ICurrentTenantService tenantService) : DbContext(options)
+public class ApplicationDbContext : DbContext
 {
-    // Suas tabelas
+    private readonly ICurrentTenantService _tenantService;
+
+    public ApplicationDbContext(
+        DbContextOptions<ApplicationDbContext> options,
+        ICurrentTenantService tenantService) : base(options)
+    {
+        _tenantService = tenantService;
+    }
+
     public DbSet<Product> Products { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
@@ -20,19 +27,17 @@ public class ApplicationDbContext(
             if (typeof(ITenantEntity).IsAssignableFrom(entityType.ClrType))
             {
                 var method = typeof(ApplicationDbContext)
-                    .GetMethod(nameof(ConfigureGlobalFilters), System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
+                    .GetMethod(nameof(ConfigureGlobalFilters), BindingFlags.NonPublic | BindingFlags.Instance)
                     ?.MakeGenericMethod(entityType.ClrType);
-
-                method?.Invoke(null, [builder, tenantService]);
+                method?.Invoke(this, [builder]);
             }
         }
     }
 
-    // "WHERE TenantId == tenantService.TenantId"
-    private static void ConfigureGlobalFilters<T>(ModelBuilder builder, ICurrentTenantService tenantService) 
+    private void ConfigureGlobalFilters<T>(ModelBuilder builder) 
         where T : class, ITenantEntity
     {
-        builder.Entity<T>().HasQueryFilter(e => e.TenantId == tenantService.TenantId);
+        builder.Entity<T>().HasQueryFilter(e => e.TenantId == _tenantService.CurrentTenantId);
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
@@ -41,7 +46,9 @@ public class ApplicationDbContext(
         {
             if (entry.State == EntityState.Added && entry.Entity.TenantId == Guid.Empty)
             {
-                entry.Entity.TenantId = tenantService.TenantId ?? throw new InvalidOperationException("Tentativa de salvar dados sem Tenant identificado!");
+                // Usa o campo privado aqui também
+                entry.Entity.TenantId = _tenantService.CurrentTenantId 
+                    ?? throw new InvalidOperationException("Tenant não identificado!");
             }
         }
         return base.SaveChangesAsync(cancellationToken);
