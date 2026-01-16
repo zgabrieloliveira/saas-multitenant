@@ -1,0 +1,33 @@
+﻿services:
+  
+  # WEB API
+  api:
+    image: multitenant-saas-api
+    build:
+      context: .
+      dockerfile: Api/Dockerfile
+    environment:
+      # inside the container, the Postgres host is the service name defined in this file
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=multitenant-saas-db;Username=postgres;Password=postgres
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "5000:8080"
+    depends_on:
+      - postgres
+
+  # DB
+  postgres:
+    image: postgres:16-alpine
+    container_name: multitenant-saas-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: multitenant-saas-db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+  
+volumes:
+  postgres_data:
