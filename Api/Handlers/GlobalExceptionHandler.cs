@@ -3,8 +3,12 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Handlers;
 
+/// <summary>
+/// global handler that intercepts unhandled exceptions and converts them to standardized problem details responses
+/// </summary>
 public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
 {
+    
     public async ValueTask<bool> TryHandleAsync(
         HttpContext httpContext,
         Exception exception,
@@ -52,19 +56,15 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
             // handles tenant resolution specific errors
             InvalidOperationException ex when ex.Message.Contains("Tenant") 
                 => (StatusCodes.Status400BadRequest, "Tenant Resolution Error", ex.Message),
-
             // handles domain validation errors
             ArgumentException ex 
                 => (StatusCodes.Status400BadRequest, "Invalid Argument", ex.Message),
-
             // handles resources not found
             KeyNotFoundException ex 
                 => (StatusCodes.Status404NotFound, "Resource Not Found", ex.Message),
-
             // handles unauthorized access attempts
             UnauthorizedAccessException ex
                 => (StatusCodes.Status401Unauthorized, "Unauthorized", "You do not have permission to access this resource."),
-
             // default fallback for unexpected errors
             _ => (StatusCodes.Status500InternalServerError, "Internal Server Error", "An unexpected error occurred.")
         };

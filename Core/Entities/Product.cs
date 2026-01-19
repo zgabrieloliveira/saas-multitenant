@@ -2,6 +2,9 @@ using Core.Common;
 
 namespace Core.Entities;
 
+/// <summary>
+/// represents a product sold by a specific tenant
+/// </summary>
 public class Product : BaseEntity
 {
     public string Name { get; set; } = string.Empty;

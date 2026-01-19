@@ -1,3 +1,4 @@
+using Api.Handlers;
 using Api.Middlewares;
 using Api.Swagger;
 using Infra;
@@ -7,6 +8,8 @@ var builder = WebApplication.CreateBuilder(args);
 // --- 1. SERVICES (DI) ---
 
 builder.Services.AddControllers();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -18,9 +21,10 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
-app.UseExceptionHandler();
 
 // --- 2. REQUEST PIPELINE ---
+
+app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment())
 {

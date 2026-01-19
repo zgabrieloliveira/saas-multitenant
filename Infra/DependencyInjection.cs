@@ -7,8 +7,14 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Infra;
 
+/// <summary>
+/// extension methods to register infrastructure services
+/// </summary>
 public static class DependencyInjection
 {
+    /// <summary>
+    /// registers database context and scoped services
+    /// </summary>
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         // postgres config

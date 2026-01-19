@@ -4,8 +4,14 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Api.Swagger;
 
+/// <summary>
+/// swagger filter that adds the 'x-tenant-id' header to all api operations
+/// </summary>
 public class TenantHeaderOperationFilter : IOperationFilter
 {
+    /// <summary>
+    /// injects the tenant header parameter into the swagger documentation.
+    /// </summary>
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {
         operation.Parameters ??= new List<OpenApiParameter>();
@@ -14,7 +20,7 @@ public class TenantHeaderOperationFilter : IOperationFilter
         {
             Name = "X-Tenant-ID",
             In = ParameterLocation.Header,
-            Description = "Identificador do Cliente (GUID)",
+            Description = "Client Identifier (GUID)",
             Required = true,
             Schema = new OpenApiSchema
             {
