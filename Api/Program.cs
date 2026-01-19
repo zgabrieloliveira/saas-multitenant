@@ -18,6 +18,7 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
+app.UseExceptionHandler();
 
 // --- 2. REQUEST PIPELINE ---
 
